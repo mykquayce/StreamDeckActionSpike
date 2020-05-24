@@ -1,12 +1,58 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using StreamDeckActionSpike.ConsoleApp.Extensions;
+using System;
+using System.Diagnostics;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StreamDeckActionSpike.ConsoleApp
 {
-	class Program
+	public static class Program
 	{
-		static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
-			Console.WriteLine("Hello World!");
+#if DEBUG
+			while (!Debugger.IsAttached) await Task.Delay(millisecondsDelay: 1_000);
+			Debugger.Break();
+#endif
+
+			var config = new ConfigurationBuilder()
+				.AddStreamDeckCommandLine(args)
+				.Build();
+
+			using var clientWebSocket = new ClientWebSocket();
+
+			var uri = new Uri("ws://localhost:" + config["StreamDeck:Port"]);
+
+			// Cancellation token
+			using var cancellationTokenSource = new CancellationTokenSource();
+
+			// Connect
+			await clientWebSocket.ConnectAsync(uri, cancellationTokenSource.Token);
+
+			// Register
+			await clientWebSocket.RegisterAsync(config["StreamDeck:RegisterEvent"], config["StreamDeck:PluginUUID"], cancellationTokenSource.Token);
+
+			// Receive
+			while (!cancellationTokenSource.IsCancellationRequested)
+			{
+				var (result, payload) = await clientWebSocket.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
+
+				Debug.WriteLine(payload.@event);
+
+				switch (payload.@event)
+				{
+					case "keyDown":
+						await clientWebSocket.SetTitleAsync(payload.context!, "hello world");
+						break;
+				}
+
+				await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
+			}
+
+			// Close
+			await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cancellationTokenSource.Token);
 		}
 	}
 }
