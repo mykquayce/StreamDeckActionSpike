@@ -20,7 +20,7 @@ pushd ./StreamDeckActionSpike.ConsoleApp/ >/dev/null
 
 rm ./bin/Release/net5.0/publish/*
 
-for runtime in osx.10.11-x64 win10-x64
+for runtime in linux-musl-x64 osx.10.11-x64 win10-x64
 do
 	printf "\nPublishing for $runtime...\n"
 	dotnet publish --configuration "Debug" --no-self-contained --output "./bin/Release/net5.0/publish/" --runtime "$runtime"
