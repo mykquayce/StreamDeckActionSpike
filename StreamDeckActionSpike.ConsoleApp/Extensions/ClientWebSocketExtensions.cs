@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
@@ -17,7 +16,7 @@ namespace StreamDeckActionSpike.ConsoleApp.Extensions
 
 			var bytes = buffer[..result.Count];
 
-			using var stream = new MemoryStream(bytes);
+			await using var stream = new MemoryStream(bytes);
 
 			var value = await JsonSerializer.DeserializeAsync<T>(stream);
 
@@ -28,12 +27,12 @@ namespace StreamDeckActionSpike.ConsoleApp.Extensions
 		{
 			var payload = new { @event, uuid, };
 
-			return socket.SendAsync(payload, cancellationToken);
+			return socket.SendAsync(payload, cancellationToken ?? CancellationToken.None);
 		}
 
 		public async static Task SendAsync(this ClientWebSocket socket, object o, CancellationToken? cancellationToken = default)
 		{
-			using var stream = new MemoryStream();
+			await using var stream = new MemoryStream();
 
 			await JsonSerializer.SerializeAsync(stream, o);
 
@@ -55,7 +54,7 @@ namespace StreamDeckActionSpike.ConsoleApp.Extensions
 				},
 			};
 
-			return socket.SendAsync(payload, cancellationToken);
+			return socket.SendAsync(payload, cancellationToken ?? CancellationToken.None);
 		}
 	}
 }
