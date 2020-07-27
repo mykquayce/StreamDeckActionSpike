@@ -41,11 +41,9 @@ namespace StreamDeckActionSpike.ConsoleApp
 
 				Debug.WriteLine(payload.@event);
 
-				switch (payload.@event)
+				if ((payload.@event & Models.Events.keyDown) != 0)
 				{
-					case "keyDown":
-						await clientWebSocket.SetTitleAsync(payload.context!, "hello world");
-						break;
+					await clientWebSocket.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
 				}
 
 				await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
