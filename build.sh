@@ -1,7 +1,5 @@
 #! /bin/bash
 
-pushd ~/source/repos/StreamDeckActionSpike/ >/dev/null
-
 printf "\nRestoring NuGet packages...\n"
 dotnet restore --source https://api.nuget.org/v3/index.json --source http://nuget/nuget
 
@@ -37,5 +35,4 @@ popd >/dev/null
 printf "\nDeploying...\n"
 cp --preserve=all --recursive --update --verbose "./bin/Release/net5.0/publish/." "${APPDATA}/Elgato/StreamDeck/Plugins/com.bob.helloworld.sdPlugin/"
 
-popd >/dev/null
 popd >/dev/null

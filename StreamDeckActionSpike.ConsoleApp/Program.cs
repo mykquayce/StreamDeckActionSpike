@@ -37,16 +37,21 @@ namespace StreamDeckActionSpike.ConsoleApp
 			// Receive
 			while (!cancellationTokenSource.IsCancellationRequested)
 			{
-				var (result, payload) = await clientWebSocket.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
-
-				Debug.WriteLine(payload.@event);
-
-				if ((payload.@event & Models.Events.keyDown) != 0)
+				try
 				{
-					await clientWebSocket.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
-				}
+					var payload = await clientWebSocket.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
 
-				await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
+					if (payload.@event.HasFlag(Models.Events.keyDown))
+					{
+						await clientWebSocket.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
+					}
+
+					await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
+				}
+				catch
+				{
+					cancellationTokenSource.Cancel();
+				}
 			}
 
 			// Close
