@@ -39,22 +39,26 @@ namespace StreamDeckActionSpike.ConsoleApp.Extensions
 			}
 			catch (Exception ex)
 			{
-				if (stream.CanRead && stream.CanSeek)
+				var json = await stream.ReadAsStringAsync();
+
+				if (!string.IsNullOrWhiteSpace(json))
 				{
-					stream.Seek(0, SeekOrigin.Begin);
-
-					using var reader = new StreamReader(stream, leaveOpen: true);
-
-					var json = await reader.ReadToEndAsync();
-
-					if (!string.IsNullOrWhiteSpace(json))
-					{
-						ex.Data.Add(nameof(json), json);
-					}
+					ex.Data.Add(nameof(json), json);
 				}
 
 				throw;
 			}
+		}
+
+		public async static Task<string> ReadAsStringAsync(this Stream stream)
+		{
+			if (stream is null) throw new ArgumentNullException(nameof(stream));
+			if (!stream.CanRead) throw new ArgumentOutOfRangeException(nameof(stream), stream, "Unreadable stream");
+
+			if (stream.Position > 0 && stream.CanSeek) stream.Position = 0;
+
+			using var reader = new StreamReader(stream, leaveOpen: true);
+			return await reader.ReadToEndAsync();
 		}
 
 		public async static Task<ArraySegment<byte>> JsonSerializeAsync(this object o, CancellationToken? cancellationToken = default)

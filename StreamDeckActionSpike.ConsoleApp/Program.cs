@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using StreamDeckActionSpike.ConsoleApp.Clients.Concrete;
 using StreamDeckActionSpike.ConsoleApp.Extensions;
 using System;
 using System.Diagnostics;
@@ -21,41 +22,43 @@ namespace StreamDeckActionSpike.ConsoleApp
 				.AddStreamDeckCommandLine(args)
 				.Build();
 
-			using var clientWebSocket = new ClientWebSocket();
+			var settings = config.GetSection("StreamDeck").Get<Models.ConfigObject>();
 
-			var uri = new Uri("ws://localhost:" + config["StreamDeck:Port"]);
+			using IStreamDeckClient client = new StreamDeckClient();
+
+			var uri = new Uri("ws://localhost:" + settings.Port);
 
 			// Cancellation token
 			using var cancellationTokenSource = new CancellationTokenSource();
 
 			// Connect
-			await clientWebSocket.ConnectAsync(uri, cancellationTokenSource.Token);
+			await client.ConnectAsync(uri, cancellationTokenSource.Token);
 
 			// Register
-			await clientWebSocket.RegisterAsync(config["StreamDeck:RegisterEvent"], config["StreamDeck:PluginUUID"], cancellationTokenSource.Token);
+			await client.RegisterAsync(settings.RegisterEvent!, settings.PluginUuid!, cancellationTokenSource.Token);
 
 			// Receive
 			while (!cancellationTokenSource.IsCancellationRequested)
 			{
 				try
 				{
-					var payload = await clientWebSocket.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
+					var payload = await client.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
 
 					if (payload.@event.HasFlag(Models.Events.keyDown))
 					{
-						await clientWebSocket.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
+						await client.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
 					}
-
-					await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
 				}
 				catch
 				{
 					cancellationTokenSource.Cancel();
 				}
+
+				await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
 			}
 
 			// Close
-			await clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cancellationTokenSource.Token);
+			await client.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cancellationTokenSource.Token);
 		}
 	}
 }

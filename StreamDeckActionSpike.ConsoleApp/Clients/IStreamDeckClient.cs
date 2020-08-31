@@ -1,0 +1,11 @@
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace StreamDeckActionSpike.ConsoleApp.Clients.Concrete
+{
+	public interface IStreamDeckClient : IWebSocketClient
+	{
+		Task RegisterAsync(string @event, string uuid, CancellationToken? cancellationToken = null);
+		Task SetTitleAsync(string context, string title, CancellationToken? cancellationToken = null);
+	}
+}
