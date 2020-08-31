@@ -1,29 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RuntimeIdentifiers>linux-musl-x64;osx.10.11-x64;win10-x64</RuntimeIdentifiers>
+    <UserSecretsId>dotnet-StreamDeckActionSpike.ConsoleApp-8E6264F7-D624-4FD7-8F56-8A32574FDC95</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="actionDefaultImage.png" />
-    <None Remove="manifest.json" />
+    <None Update="actionDefaultImage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="actionDefaultImage.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="manifest.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0-preview.8.20407.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0-preview.8.20407.11" />
   </ItemGroup>
 
 </Project>

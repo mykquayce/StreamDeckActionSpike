@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace StreamDeckActionSpike.ConsoleApp.Clients.Concrete
+namespace StreamDeckActionSpike.ConsoleApp.Clients
 {
 	public interface IStreamDeckClient : IWebSocketClient
 	{

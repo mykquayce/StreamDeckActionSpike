@@ -1,10 +1,15 @@
-﻿using System.Threading;
+﻿using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace StreamDeckActionSpike.ConsoleApp.Clients.Concrete
 {
 	public class StreamDeckClient : WebSocketClient, IStreamDeckClient
 	{
+		public StreamDeckClient(ClientWebSocket clientWebSocket)
+			: base(clientWebSocket)
+		{ }
+
 		public Task RegisterAsync(string @event, string uuid, CancellationToken? cancellationToken = default)
 		{
 			var payload = new { @event, uuid, };

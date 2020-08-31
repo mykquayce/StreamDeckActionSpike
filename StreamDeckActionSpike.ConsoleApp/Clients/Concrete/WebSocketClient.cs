@@ -10,9 +10,9 @@ namespace StreamDeckActionSpike.ConsoleApp.Clients.Concrete
 	{
 		private readonly ClientWebSocket _clientWebSocket;
 
-		public WebSocketClient()
+		public WebSocketClient(ClientWebSocket clientWebSocket)
 		{
-			_clientWebSocket = new ClientWebSocket();
+			_clientWebSocket = clientWebSocket;
 		}
 
 		public void Dispose() => _clientWebSocket?.Dispose();

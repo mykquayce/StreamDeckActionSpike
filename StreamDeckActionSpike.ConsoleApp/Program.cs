@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using StreamDeckActionSpike.ConsoleApp.Clients.Concrete;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using StreamDeckActionSpike.ConsoleApp.Extensions;
-using System;
 using System.Diagnostics;
 using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace StreamDeckActionSpike.ConsoleApp
@@ -17,48 +17,48 @@ namespace StreamDeckActionSpike.ConsoleApp
 			while (!Debugger.IsAttached) await Task.Delay(millisecondsDelay: 1_000);
 			Debugger.Break();
 #endif
+			await CreateHostBuilder(args).RunConsoleAsync();
+		}
 
-			var config = new ConfigurationBuilder()
-				.AddStreamDeckCommandLine(args)
-				.Build();
+		public static IHostBuilder CreateHostBuilder(string[] args)
+		{
+			var hostBuilder = new HostBuilder();
 
-			var settings = config.GetSection("StreamDeck").Get<Models.ConfigObject>();
-
-			using IStreamDeckClient client = new StreamDeckClient();
-
-			var uri = new Uri("ws://localhost:" + settings.Port);
-
-			// Cancellation token
-			using var cancellationTokenSource = new CancellationTokenSource();
-
-			// Connect
-			await client.ConnectAsync(uri, cancellationTokenSource.Token);
-
-			// Register
-			await client.RegisterAsync(settings.RegisterEvent!, settings.PluginUuid!, cancellationTokenSource.Token);
-
-			// Receive
-			while (!cancellationTokenSource.IsCancellationRequested)
-			{
-				try
+			hostBuilder
+				.ConfigureAppConfiguration((context, builder) =>
 				{
-					var payload = await client.ReceiveAsync<Models.PayloadWrapperObject>(cancellationTokenSource.Token);
+					var environment = context.HostingEnvironment.EnvironmentName ?? Environments.Production;
 
-					if (payload.@event.HasFlag(Models.Events.keyDown))
-					{
-						await client.SetTitleAsync(payload.context!, "hello world", cancellationTokenSource.Token);
-					}
-				}
-				catch
+					builder
+						.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+						.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+						.AddStreamDeckCommandLine(args);
+				});
+
+			hostBuilder
+				.ConfigureServices((hostContext, services) =>
 				{
-					cancellationTokenSource.Cancel();
-				}
+					var configuration = hostContext.Configuration;
 
-				await Task.Delay(millisecondsDelay: 1_000, cancellationTokenSource.Token);
-			}
+					services
+						.Configure<Models.ConfigObject>(configuration.GetSection("StreamDeck"));
 
-			// Close
-			await client.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription: default, cancellationTokenSource.Token);
+					services
+						.AddTransient<ClientWebSocket>()
+						.AddTransient<Clients.IStreamDeckClient, Clients.Concrete.StreamDeckClient>()
+						.AddTransient<Clients.IWebSocketClient, Clients.Concrete.WebSocketClient>();
+
+					services
+						.AddLogging(builder =>
+						{
+							builder.AddConsole();
+						});
+
+					services
+						.AddHostedService<Worker>();
+				});
+
+			return hostBuilder;
 		}
 	}
 }

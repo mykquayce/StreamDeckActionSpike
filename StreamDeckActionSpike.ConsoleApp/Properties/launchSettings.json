@@ -2,7 +2,11 @@
   "profiles": {
     "StreamDeckActionSpike.ConsoleApp": {
       "commandName": "Project",
-      "commandLineArgs": "-port 28196 -pluginUUID 41D209C48FAD1F4B1F4F60809DD5B926 -registerEvent registerPlugin -info \"{\\\"application\\\":{\\\"language\\\":\\\"en\\\",\\\"platform\\\":\\\"windows\\\",\\\"version\\\":\\\"4.7.0.12981\\\"},\\\"devicePixelRatio\\\":1,\\\"devices\\\":[{\\\"id\\\":\\\"2A0A7BDABC77303D81BE832BE3A5196C\\\",\\\"name\\\":\\\"Stream Deck XL\\\",\\\"size\\\":{\\\"columns\\\":8,\\\"rows\\\":4},\\\"type\\\":2}],\\\"plugin\\\":{\\\"version\\\":\\\"1.4\\\"}}\""
+      "commandLineArgs": "-port 28196 -pluginUUID 41D209C48FAD1F4B1F4F60809DD5B926 -registerEvent registerPlugin -info \"{\\\"application\\\":{\\\"language\\\":\\\"en\\\",\\\"platform\\\":\\\"windows\\\",\\\"version\\\":\\\"4.7.0.12981\\\"},\\\"devicePixelRatio\\\":1,\\\"devices\\\":[{\\\"id\\\":\\\"2A0A7BDABC77303D81BE832BE3A5196C\\\",\\\"name\\\":\\\"Stream Deck XL\\\",\\\"size\\\":{\\\"columns\\\":8,\\\"rows\\\":4},\\\"type\\\":2}],\\\"plugin\\\":{\\\"version\\\":\\\"1.4\\\"}}\"",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": "true"
     }
   }
 }
